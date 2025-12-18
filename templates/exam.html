@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="webcam-container">
+    <img src="{{ url_for('video_feed') }}" width="100%">
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card p-4 shadow-sm border-0">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 id="q-title" class="text-primary mb-0">Question 1</h4>
+                    <div class="timer-box p-2 bg-light border rounded shadow-sm">
+                        <span id="timer" class="text-danger fw-bold">10:00</span>
+                    </div>
+                </div>
+                <div id="q-container">
+                    <h5 id="q-text" class="mb-4">Loading...</h5>
+                    <div id="options" class="d-grid gap-2"></div>
+                </div>
+                <div class="mt-5 border-top pt-3">
+                    <button id="next-btn" class="btn btn-primary px-5 float-end" onclick="processSelection()">Submit & Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "Which language is used for Flask backend?", a: ["Java", "Python", "PHP", "C++"], c: 1 },
+        { q: "What does SQL stand for?", a: ["Strong Query Lang", "Structured Query Lang", "Simple Query Lang", "None"], c: 1 },
+        { q: "OpenCV is primarily used for?", a: ["Audio", "Computer Vision", "Networking", "Database"], c: 1 },
+        { q: "Which tag is used for images in HTML?", a: ["<picture>", "<src>", "<img>", "<href>"], c: 2 },
+        { q: "What is the default port for Flask?", a: ["8080", "3000", "5000", "80"], c: 2 },
+        { q: "Which database is used in this project?", a: ["MongoDB", "PostgreSQL", "SQLite", "Firebase"], c: 2 },
+        { q: "What is a 'Data Lake'?", a: ["Water storage", "Raw data repository", "Data leak", "A type of cloud"], c: 1 },
+        { q: "Which CSS framework are we using?", a: ["Tailwind", "Bootstrap", "Bulma", "Sass"], c: 1 },
+        { q: "HTTP status code 404 means?", a: ["Success", "Forbidden", "Not Found", "Server Error"], c: 2 },
+        { q: "Which Python keyword defines a function?", a: ["func", "define", "def", "function"], c: 2 }
+    ];
+
+    let current = 0; let score = 0; let totalTime = 600;
+
+    const timerInterval = setInterval(() => {
+        let mins = Math.floor(totalTime / 60);
+        let secs = totalTime % 60;
+        document.getElementById('timer').innerText = `${mins}:${secs < 10 ? '0'+secs : secs}`;
+        if (totalTime-- <= 0) { clearInterval(timerInterval); submitFinalResults(); }
+    }, 1000);
+
+    function loadQ() {
+        const q = questions[current];
+        document.getElementById('q-title').innerText = `Question ${current + 1} of 10`;
+        document.getElementById('q-text').innerText = q.q;
+        let optHtml = '';
+        q.a.forEach((opt, i) => {
+            // Fix for Question 4: Escape the < and > characters
+            let displayVal = opt.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            optHtml += `<div class="p-2 border rounded my-1">
+                <input type="radio" name="opt" value="${i}" id="opt${i}" class="form-check-input me-2">
+                <label for="opt${i}" class="form-check-label w-100">${displayVal}</label>
+            </div>`;
+        });
+        document.getElementById('options').innerHTML = optHtml;
+        if (current === 9) document.getElementById('next-btn').innerText = "Finish Exam";
+    }
+
+    function processSelection() {
+        const sel = document.querySelector('input[name="opt"]:checked');
+        if (!sel) return alert("Select an answer!");
+        if (parseInt(sel.value) === questions[current].c) score++;
+        if (current < 9) { current++; loadQ(); } 
+        else { clearInterval(timerInterval); submitFinalResults(); }
+    }
+
+    function submitFinalResults() {
+        fetch('/submit_exam', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ score: score })
+        }).then(res => res.json()).then(data => {
+            localStorage.setItem('finalScore', score);
+            localStorage.setItem('totalQ', 10);
+            localStorage.setItem('violations', data.violations);
+            window.location.href = "/result";
+        });
+    }
+    window.onload = loadQ;
+</script>
+{% endblock %}

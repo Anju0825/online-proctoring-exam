@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-5 text-center shadow">
+                <h1 class="text-success mb-4">Exam Submitted!</h1>
+                <hr>
+                <div class="my-4">
+                    <h3>Your Score: <span id="disp-score" class="text-primary">0</span> / <span id="disp-total">10</span></h3>
+                    <h5 class="text-danger">Proctoring Violations Detected: <span id="disp-violations">0</span></h5>
+                </div>
+                <div class="alert alert-info small">
+                    All logs and evidence images have been stored in the <strong>Data Lake</strong> for audit.
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-lg mt-3">Logout & Close Session</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pull data from localStorage
+    document.getElementById('disp-score').innerText = localStorage.getItem('finalScore') || 0;
+    document.getElementById('disp-total').innerText = localStorage.getItem('totalQ') || 10;
+    document.getElementById('disp-violations').innerText = localStorage.getItem('violations') || 0;
+</script>
+{% endblock %}

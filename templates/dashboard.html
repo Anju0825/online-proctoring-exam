@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container text-center">
+    <div class="card p-5">
+        <h2>Identity Verification</h2>
+        <p>Please look at the camera and capture your face.</p>
+        <video id="video" width="400" autoplay class="rounded border mb-3"></video>
+        <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+        <div>
+            <button id="capture-btn" class="btn btn-primary btn-lg">Capture Photo</button>
+            <a id="start-exam" href="/exam" class="btn btn-success btn-lg d-none">Start Exam</a>
+        </div>
+    </div>
+</div>
+<script>
+    const video = document.getElementById('video');
+    const captureBtn = document.getElementById('capture-btn');
+    navigator.mediaDevices.getUserMedia({ video: true }).then(s => video.srcObject = s);
+    captureBtn.onclick = () => {
+        const canvas = document.getElementById('canvas');
+        canvas.getContext('2d').drawImage(video, 0, 0, 400, 300);
+        fetch('/enroll_face', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ image: canvas.toDataURL('image/jpeg') })
+        }).then(() => {
+            alert("Face Verified!");
+            captureBtn.classList.add('d-none');
+            document.getElementById('start-exam').classList.remove('d-none');
+        });
+    };
+</script>
+{% endblock %}
