@@ -1,4 +1,4 @@
-![IMG_20240826_211132](https://github.com/user-attachments/assets/c216c446-d48e-4fb7-99a7-928260f27a1e)# AI-Based Online Proctoring System
+AI-Based Online Proctoring System
 
 A real-time AI-powered online proctoring system built using **Flask** and **OpenCV** to monitor candidates during online examinations and detect suspicious activities such as face absence, multiple faces, and tab switching.
 
